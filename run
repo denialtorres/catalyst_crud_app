@@ -1,0 +1,13 @@
+#!/bin/sh
+
+docker rm -f evg_web
+docker rm -f evg_db
+docker network rm evg_net
+
+docker network create -d bridge evg_net
+
+docker run --name evg_db -e MYSQL_ROOT_HOST=% -e  MYSQL_ROOT_PASSWORD=yourpasswd -p 3306:3306 --network evg_net -d mysql:5.6
+
+docker build --tag=evg_web_image .
+
+docker run -p 3000:3000 --volume $PWD/www:/home/evergreen/www:rw --volume $PWD/sql:/home/evergreen/sql:rw -it --name evg_web --network evg_net evg_web_image
